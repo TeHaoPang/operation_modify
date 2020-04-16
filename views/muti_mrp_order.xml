@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<!--        <record id="muti_mrp_order_action" model="ir.actions.act_window">-->
+<!--            <field name="name">預開製令</field>-->
+<!--            <field name="type">ir.actions.act_window</field>-->
+<!--            <field name="res_model">muti.mrp.order</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--              <p class="oe_view_nocontent_create">-->
+<!--                &lt;!&ndash; Add Text Here &ndash;&gt;-->
+<!--              </p><p>-->
+<!--                &lt;!&ndash; More details about what a user can do with this object will be OK &ndash;&gt;-->
+<!--              </p>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <menuitem id="muti_mrp_order_menuitem"-->
+<!--            name="預開製令"-->
+<!--            parent="mrp.menu_mrp_root"-->
+<!--            sequence="1"/>-->
+
+<!--        <menuitem id="muti_mrp_order_menuitem_action"-->
+<!--                  name="預開製令"-->
+<!--                  parent="mrp.menu_mrp_root"-->
+<!--                  action="muti_mrp_order_action"-->
+<!--                  sequence="1"/>-->
+
+<!--        <record id="muti_mrp_order_tree" model="ir.ui.view">-->
+<!--            <field name="name">muti_mrp_order_tree</field>-->
+<!--            <field name="model">muti.mrp.order</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <tree string="">-->
+<!--                    <field name="product_id"/>-->
+<!--                </tree>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <record id="muti_mrp_order_form_view" model="ir.ui.view">-->
+<!--            <field name="name">muti_mrp_order_form_view</field>-->
+<!--            <field name="model">muti.mrp.order</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <form string="">-->
+<!--                    <sheet>-->
+<!--                        <field name="name" readonly = "1"/>-->
+<!--                        <group>-->
+<!--                            <field name="product_id"/>-->
+<!--                            <field name="bom_id" />-->
+<!--                        </group>-->
+<!--                        <field name="mrp_ids">-->
+<!--                            <tree>-->
+<!--                                <field name="product_id"/>-->
+<!--                            </tree>-->
+<!--                        </field>-->
+<!--                    </sheet>-->
+<!--                </form>-->
+<!--            </field>-->
+<!--        </record>-->
+
+    </data>
+</odoo>
