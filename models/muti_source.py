@@ -40,6 +40,7 @@ class ChangeProductionQtyInherit(models.TransientModel):
                 'location_id': i.location_id.id,
                 'location_dest_id': i.location_dest_id.id,
                 'move_id': move_id.id,
+                'move_line_id': i.id
             }
             lines.append(val)
             print(lines)
@@ -49,24 +50,22 @@ class ChangeProductionQtyInherit(models.TransientModel):
 
     @api.multi
     def change_prod_qty(self):
-
-        res = super(ChangeProductionQtyInherit, self).change_prod_qty()
+        #res = super(ChangeProductionQtyInherit, self).change_prod_qty()
         print('多來源改寫')
         print(self.change_production_qty_line_ids)
         # print(self.change_production_qty_line_ids[0].product_uom_qty)
         # print(self.change_production_qty_line_ids[1].product_uom_qty)
 
         """請記得寫一個防呆去避免使用將同批號同產品且同位置的產品來源分成兩筆 ex:A產品 批號:1234 位置:Bed1 數量:10 把這東西分成兩筆數量分別5去進行多來源改動 by 龎學長"""
-
         for move_line in self.change_production_qty_line_ids:
             print(move_line.move_id)
             print(move_line)
             if len(move_line) == 0:
                 break
-            if move_line.move_id:
+            if move_line.move_id and move_line.move_line_id:
                 print("測試二號")
                 '''會取得兩筆'''
-                temp = self.env['stock.move.line'].search([('move_id', '=', move_line.move_id.id),('location_id', '=', move_line.location_id.id),('lot_id', '=',move_line.lot_id.id)])
+                temp = self.env['stock.move.line'].search([('move_id', '=', move_line.move_id.id)])
                 print(temp)
                 for i in temp:
                     if i.done_wo is True:
@@ -74,7 +73,6 @@ class ChangeProductionQtyInherit(models.TransientModel):
                         i.update({
                             'lot_id': move_line.lot_id.id,
                             'location_id': move_line.location_id.id,
-                            # 'product_qty': move_line.product_uom_qty,
                             'product_uom_qty': move_line.product_uom_qty
                         })
                         quant = self.env['stock.quant'].search([('product_id', '=', move_line.product_id.id),
@@ -114,6 +112,7 @@ class ChangeProductionQtyInherit(models.TransientModel):
                 print('test')
                 wo = self.env['mrp.workorder'].search([('production_id', '=', self.mo_id.id)])
                 if wo:
+                    print('進wo')
                     wo.active_move_line_ids.create({
                         'move_id': self.change_production_qty_line_ids[0].move_id.id,
                         'name': self.mo_id.name,
@@ -130,7 +129,7 @@ class ChangeProductionQtyInherit(models.TransientModel):
                         'done_wo': False,
                     })
         print("結束")
-        # res = super(ChangeProductionQtyInherit, self).change_prod_qty()
+        res = super(ChangeProductionQtyInherit, self).change_prod_qty()
 
         # raise UserError('')
         return res
@@ -147,6 +146,7 @@ class ChangeProductionQtyLine(models.TransientModel):
     location_id = fields.Many2one('stock.location')
     location_dest_id = fields.Many2one('stock.location')
     move_id = fields.Many2one('stock.move')
+    move_line_id = fields.Many2one('stock.move.line')
 
 
 class StockMoveMethodModify(models.Model):
