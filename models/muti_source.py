@@ -65,7 +65,7 @@ class ChangeProductionQtyInherit(models.TransientModel):
             if move_line.move_id and move_line.move_line_id:
                 print("測試二號")
                 '''會取得兩筆'''
-                temp = self.env['stock.move.line'].search([('move_id', '=', move_line.move_id.id)])
+                temp = self.env['stock.move.line'].search([('move_id', '=', move_line.move_id.id),('location_id', '=', move_line.move_line_id.location_id.id),('lot_id', '=', move_line.move_line_id.lot_id.id)])
                 print(temp)
                 for i in temp:
                     if i.done_wo is True:
@@ -151,7 +151,7 @@ class ChangeProductionQtyLine(models.TransientModel):
 
 class StockMoveMethodModify(models.Model):
     _inherit = "stock.move"
-
+    "改寫_decrease_reserved_quanity()"
     def _decrease_reserved_quanity(self, quantity):
         move_line_to_unlink = self.env['stock.move.line']
         check_move_line = self.env['stock.move.line'].search([('move_id', '=', self.id)])
