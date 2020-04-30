@@ -226,7 +226,7 @@ class MrpWorkorderEdit(models.Model):
         print("record_production 改寫")
         print(self.move_line_ids)
 
-        source_product = self.env['mrp.bom.line'].search([('bom_id', '=', self.production_id.bom_id.id)]).filtered(lambda x: x.product_id.product_tmpl_id.tracking == 'lot')
+        source_product = self.env['mrp.bom.line'].search([('bom_id', '=', self.production_id.bom_id.id)]).filtered(lambda x: x.product_id.product_tmpl_id.tracking == 'lot').product_id
 
         source_move_lines = self.move_line_ids.filtered(lambda x: x.product_id.id == source_product.id)
         print(source_move_lines)
