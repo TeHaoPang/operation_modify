@@ -25,11 +25,7 @@
     # always loaded
     'data': [
         #'security/ir.model.access.csv',
-        'views/views.xml',
-        'views/templates.xml',
         'views/mrp_edit.xml',
-        # 'views/muti_mrp_order.xml',
-        #'wizard/mrp_wizard.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- 入庫生產單的彈出視窗-->
         <record id="mrp_edit_wizard" model="ir.ui.view">
             <field name="name">mrp_edit_wizard</field>
             <field name="model">mrp.input</field>
             <field name="arch" type="xml">
                 <form string='3456'>
                     <group>
-                        <field name="production_id" invisible="0"/>
+                        <field name="production_id" string="原始製令" invisible="0" readonly="1"/>
                         <field name="product_id" readonly="1" string="產品"/>
                         <field name="produce_qty" string="預先生產數量"/>
-                        <field name="muti_input_source_line_ids" context="{'active_id': production_id,}">
-                            <tree editable="button"  delete="1">
-                                <field name="product_id"/>
-                                <field name="qty_to_consume"/>
-                                <field name="qty_to_do" />
-                                <field name="lot_id"/>
-                                <field name="location_src_id" />
-                                <field name="location_dest_id"/>
-                                <field name="move_id" invisible="1"/>
-                            </tree>
-                        </field>
                     </group>
+                    <notebook>
+                        <page string="多來源明細">
+                            <field name="muti_input_source_line_ids" context="{'active_id': production_id,}">
+                                <tree editable="bottom"  delete="0" create="0">
+                                    <field name="product_id"/>
+                                    <field name="qty_to_consume"/>
+                                    <field name="qty_to_do" />
+                                    <field name="lot_id"/>
+                                    <field name="location_src_id" />
+                                    <field name="location_dest_id" invisible="1"/>
+                                    <field name="move_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                     <footer>
                         <button name="mrp_edit2" type="object" string="_Apply"/>
                         <button string="Cancel" special="cancel" />
@@ -29,7 +34,7 @@
                 </form>
             </field>
         </record>
-
+        <!--入庫生產單的action-->
         <record id="mrp_edit_action" model="ir.actions.act_window">
             <field name="name">入庫生產單</field>
             <field name="type">ir.actions.act_window</field>
@@ -39,45 +44,7 @@
             <field name="view_id" ref="mrp_edit_wizard"/>
             <field name="target">new</field>
         </record>
-
-<!--        <record id="mrp_muti_source_wizard" model="ir.ui.view">-->
-<!--            <field name="name">mrp_muti_source_wizard</field>-->
-<!--            <field name="model">mrp.muti.source</field>-->
-<!--            <field name="arch" type="xml">-->
-<!--                <form string='123'>-->
-<!--                    <group>-->
-<!--                        <field name="production_id" invisible="1"/>-->
-<!--                        <field name="product_id"/>-->
-<!--                        <field name="location_dest_id"/>-->
-<!--                        <field name="muti_source_line_ids" context="{'active_id': production_id,}">-->
-<!--                            <tree editable="button" delete="1" >-->
-<!--                                <field name="product_id" domain="[('id', '=', parent.product_id)]"/>-->
-<!--                                <field name="qty_to_consume"/>-->
-<!--                                <field name="lot_id" domain="[('product_id', '=', product_id)]"/>-->
-<!--                                <field name="location_src_id" />-->
-<!--                                <field name="location_dest_id" domain="[('id', '=', parent.location_dest_id)]"/>-->
-<!--                                <field name="move_id" invisible="1"/>-->
-<!--                            </tree>-->
-<!--                        </field>-->
-<!--                    </group>-->
-<!--                    <footer>-->
-<!--                        <button name="action_done" type="object" string="_Apply"/>-->
-<!--                        <button string="Cancel" special="cancel" />-->
-<!--                    </footer>-->
-<!--                </form>-->
-<!--            </field>-->
-<!--        </record>-->
-
-<!--        <record id="mrp_muti_source_action" model="ir.actions.act_window">-->
-<!--            <field name="name">多原料單</field>-->
-<!--            <field name="type">ir.actions.act_window</field>-->
-<!--            <field name="res_model">mrp.muti.source</field>-->
-<!--            <field name="view_mode">form</field>-->
-<!--            <field name="view_type">form</field>-->
-<!--            <field name="view_id" ref="mrp_muti_source_wizard"/>-->
-<!--            <field name="target">new</field>-->
-<!--        </record>-->
-
+        <!--入庫按鈕-->
         <record id="mrp_edit_form" model="ir.ui.view">
             <field name="name">mrp_edit</field>
             <field name="model">mrp.production</field>
@@ -91,64 +58,54 @@
             </field>
         </record>
 
-
-        <record id="view_stock_move_lots_edit" model="ir.ui.view">
-            <field name="name">view_stock_move_lots_edit</field>
-            <field name="model">stock.move</field>
-            <field name="inherit_id" ref="mrp.view_stock_move_lots"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='active_move_line_ids']/tree//field[@name='location_id']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
-                <xpath expr="//field[@name='active_move_line_ids']/tree//field[@name='location_dest_id']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
-            </field>
-        </record>
-
+        <!--製令update按鈕的彈出視窗修改-->
         <record id="view_change_production_qty_wizard_edit" model="ir.ui.view">
             <field name="name">view_change_production_qty_wizard_edit</field>
             <field name="model">change.production.qty</field>
             <field name="inherit_id" ref="mrp.view_change_production_qty_wizard"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='product_qty']" position="after">
-                    <field name="product_id"/>
-                    <field name="location_dest_id"/>
-                    <field name="change_production_qty_line_ids" >
-                        <tree editable="button" delete="1" >
-                            <field name="product_id" domain="[('id', '=', parent.product_id)]"/>
-                            <field name="lot_id" domain="[('product_id', '=', product_id)]"/>
-                            <field name="product_uom_qty" />
-                            <field name="location_id" />
-                            <field name="location_dest_id" domain="[('id', '=', parent.location_dest_id)]"/>
-                            <field name="move_id" invisible="0"/>
-                            <field name="move_line_id" />
-                        </tree>
-                    </field>
+                        <field name="product_id"/>
+                        <field name="location_dest_id" invisible="1"/>
                 </xpath>
-                <xpath expr="//field[@name='mo_id']" position="attributes">
-                    <attribute name="invisible">0</attribute>
+                <xpath expr="//group" position="after">
+                    <notebook>
+                        <page string="多來源明細">
+                            <field name="change_production_qty_line_ids" >
+                                <tree editable="bottom" delete="1" >
+                                    <field name="product_id" domain="[('id', '=', parent.product_id)]"/>
+                                    <field name="lot_id" domain="[('product_id', '=', product_id)]"/>
+                                    <field name="product_uom_qty" />
+                                    <field name="location_id" />
+                                    <field name="location_dest_id" invisible="1" domain="[('id', '=', parent.location_dest_id)]"/>
+                                    <field name="move_id" invisible="1"/>
+                                    <field name="move_line_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </xpath>
             </field>
         </record>
 
+        <!--工單顯示修改-->
         <record id="mrp_workorder_edit" model="ir.ui.view">
             <field name="name">mrp_workorder_edit</field>
             <field name="model">mrp.workorder</field>
             <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='move_raw_ids']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
-                <xpath expr="//field[@name='move_raw_ids']" position="after">
-                    <field name="move_line_ids"/>
-                </xpath>
-                <xpath expr="//field[@name='active_move_line_ids']/tree/field[@name='location_id']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
-                <xpath expr="//field[@name='active_move_line_ids']/tree/field[@name='location_dest_id']" position="attributes">
-                    <attribute name="invisible">0</attribute>
-                </xpath>
+<!--                <xpath expr="//field[@name='move_raw_ids']" position="attributes">-->
+<!--                    <attribute name="invisible">0</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='move_raw_ids']" position="after">-->
+<!--                    <field name="move_line_ids"/>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='active_move_line_ids']/tree/field[@name='location_id']" position="attributes">-->
+<!--                    <attribute name="invisible">0</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='active_move_line_ids']/tree/field[@name='location_dest_id']" position="attributes">-->
+<!--                    <attribute name="invisible">0</attribute>-->
+<!--                </xpath>-->
 
                 <xpath expr="//field[@name='active_move_line_ids']/tree" position="replace">
                     <tree editable="bottom" create="1" delete="1" write="1">
@@ -165,7 +122,6 @@
                 </xpath>
             </field>
         </record>
-
 
     </data>
 </odoo>
