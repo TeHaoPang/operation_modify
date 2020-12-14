@@ -94,19 +94,6 @@
             <field name="model">mrp.workorder</field>
             <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
             <field name="arch" type="xml">
-<!--                <xpath expr="//field[@name='move_raw_ids']" position="attributes">-->
-<!--                    <attribute name="invisible">0</attribute>-->
-<!--                </xpath>-->
-<!--                <xpath expr="//field[@name='move_raw_ids']" position="after">-->
-<!--                    <field name="move_line_ids"/>-->
-<!--                </xpath>-->
-<!--                <xpath expr="//field[@name='active_move_line_ids']/tree/field[@name='location_id']" position="attributes">-->
-<!--                    <attribute name="invisible">0</attribute>-->
-<!--                </xpath>-->
-<!--                <xpath expr="//field[@name='active_move_line_ids']/tree/field[@name='location_dest_id']" position="attributes">-->
-<!--                    <attribute name="invisible">0</attribute>-->
-<!--                </xpath>-->
-
                 <xpath expr="//field[@name='active_move_line_ids']/tree" position="replace">
                     <tree editable="bottom" create="1" delete="1" write="1">
                             <field name="product_id"/>
