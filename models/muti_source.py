@@ -23,20 +23,14 @@ class ChangeProductionQtyInherit(models.TransientModel):
             res['mo_id'] = self._context['active_id']
         if 'product_qty' not in fields and not res.get('product_qty') and res.get('mo_id'):
             res['product_qty'] = self.env['mrp.production'].browse(res['mo_id']).product_qty
-        # print('change production qty default get')
-        # print(res)
-        # print(res['mo_id'])
-        # print(self.mo_id)
-        # print(self.env['mrp.production'].search([('id', '=', res['mo_id'])]).move_raw_ids)
+       
         move_id = self.env['mrp.production'].search([('id', '=', res['mo_id'])]).move_raw_ids.filtered(lambda x: x.product_id.product_tmpl_id.tracking == 'lot')
         res['product_id'] = move_id.product_id.id
         res['location_dest_id'] = move_id.location_dest_id.id
-        #print(move_id)
 
         """從move_id中取得原本製令的stock move line資料，放入新增的change_production_qty_line_ids中，讓使用者可以看到原本製令的原料來源位置"""
         lines = []
         for i in self.env['stock.move.line'].search([('move_id', '=', move_id.id), ('done_wo', '=', 'true')]):
-            print(i)
             val = {
                 'product_id': i.product_id.id,
                 'lot_id': i.lot_id.id,
@@ -49,9 +43,7 @@ class ChangeProductionQtyInherit(models.TransientModel):
                 'move_line_id': i.id
             }
             lines.append(val)
-            print(lines)
         res['change_production_qty_line_ids'] = [(0, 0, x) for x in lines]
-        #print(res)
         return res
 
     """
@@ -60,42 +52,28 @@ class ChangeProductionQtyInherit(models.TransientModel):
     """
     @api.multi
     def change_prod_qty(self):
-        #res = super(ChangeProductionQtyInherit, self).change_prod_qty()
         print('多來源改寫')
-        #print(self.change_production_qty_line_ids)
-        # print(self.change_production_qty_line_ids[0].product_uom_qty)
-        # print(self.change_production_qty_line_ids[1].product_uom_qty)
 
         """請記得寫一個防呆去避免使用將同批號同產品且同位置的產品來源分成兩筆 ex:A產品 批號:1234 位置:Bed1 數量:10 把這東西分成兩筆數量分別5去進行多來源改動 by 龎學長"""
 
         """將使用者新增加的原料來源或修改的資料作新增、寫入進stock move line的動作"""
         for move_line in self.change_production_qty_line_ids:
-            # print(move_line.move_id)
-            # print(move_line)
             if len(move_line) == 0:
                 break
             if move_line.move_id and move_line.move_line_id:
-                #print("測試二號")
                 '''
                 再有開工單的情況下，會取得兩筆move line，
                 一筆done_wo為true(實際的move_line)，另一筆(done_wo為false)為暫存move line(給工單使用的，之後會被unlink())
                 '''
                 temp = self.env['stock.move.line'].search([('move_id', '=', move_line.move_id.id),('location_id', '=', move_line.move_line_id.location_id.id),('lot_id', '=', move_line.move_line_id.lot_id.id)])
-                #print(temp)
                 """改寫現有move line"""
                 for i in temp:
                     if i.done_wo is True:
-                        #print('到這')
                         i.update({
                             'lot_id': move_line.lot_id.id,
                             'location_id': move_line.location_id.id,
                             'product_uom_qty': move_line.product_uom_qty
                         })
-                        # quant = self.env['stock.quant'].search([('product_id', '=', move_line.product_id.id),
-                        #                                 ('location_id', '=', move_line.location_id.id),
-                        #                                 ('lot_id', '=', move_line.lot_id.id)])
-                        #print(quant)
-                        #print(quant.reserved_quantity)
                     else:
                         i.update({
                             'lot_id': move_line.lot_id.id,
@@ -104,7 +82,6 @@ class ChangeProductionQtyInherit(models.TransientModel):
                         })
 
             elif len(move_line.move_id) == 0:
-                #print('沒有這筆move line 創新的')
                 """沒有這筆move line 創新的"""
                 self.env['stock.move.line'].create({
                     'move_id': self.change_production_qty_line_ids[0].move_id.id,
@@ -124,14 +101,11 @@ class ChangeProductionQtyInherit(models.TransientModel):
                 quant = self.env['stock.quant'].search([('product_id', '=', move_line.product_id.id),
                                                         ('location_id', '=', move_line.location_id.id),
                                                         ('lot_id', '=', move_line.lot_id.id)])
-                #print(quant.reserved_quantity)
                 quant.write({'reserved_quantity': quant.reserved_quantity+move_line.product_uom_qty})
 
-                #print('test')
                 """進入該筆製令的工單來新增其active_move_line"""
                 wo = self.env['mrp.workorder'].search([('production_id', '=', self.mo_id.id)])
                 if wo:
-                    #print('進wo')
                     wo.active_move_line_ids.create({
                         'move_id': self.change_production_qty_line_ids[0].move_id.id,
                         'name': self.mo_id.name,
@@ -147,7 +121,6 @@ class ChangeProductionQtyInherit(models.TransientModel):
                         'workorder_id': self.change_production_qty_line_ids[0].move_id.workorder_id.id,
                         'done_wo': False,
                     })
-        #print("結束")
         res = super(ChangeProductionQtyInherit, self).change_prod_qty()
         return res
 
@@ -178,8 +151,7 @@ class StockMoveMethodModify(models.Model):
         """加這一行而已"""
         for move in self:
             reserved_quantity = quantity
-            # if len(self.move_line_ids) > 1:
-            #     break
+            
             for move_line in self.move_line_ids:
                 if move_line.product_uom_qty > reserved_quantity:
                     move_line.product_uom_qty = reserved_quantity
@@ -195,14 +167,10 @@ class MrpWorkorderEdit(models.Model):
 
     """override _generate_lot_ids()"""
     def _generate_lot_ids(self):
-        #print('_generate_lot_ids')
-
-        #print(self.ensure_one())
         self.ensure_one()
         MoveLine = self.env['stock.move.line']
         tracked_moves = self.move_line_ids.filtered(
             lambda move: move.state not in ('done', 'cancel') and move.product_id.tracking != 'none' and move.product_id != self.production_id.product_id and move.move_id.bom_line_id)
-        #print(tracked_moves)
         for move in tracked_moves:
             qty = move.move_id.unit_factor * self.qty_producing
             if move.product_id.tracking == 'serial':
@@ -235,7 +203,6 @@ class MrpWorkorderEdit(models.Model):
                     'location_id': move.location_id.id,
                     'location_dest_id': move.location_dest_id.id,
                 })
-        #print('結束')
 
     """
     依據多來源原料位置，同步生成多目的地製成品
@@ -243,27 +210,18 @@ class MrpWorkorderEdit(models.Model):
     @api.multi
     def record_production(self):
         res = super(MrpWorkorderEdit, self).record_production()
-        #print("record_production override")
-        #print(self.move_line_ids)
+
 
         source_product = self.env['mrp.bom.line'].search([('bom_id', '=', self.production_id.bom_id.id)]).filtered(lambda x: x.product_id.product_tmpl_id.tracking == 'lot').product_id
 
         source_move_lines = self.move_line_ids.filtered(lambda x: x.product_id.id == source_product.id)
-        #print(source_move_lines)
 
         finished_move_lines = self.move_line_ids.filtered(lambda x: x.product_id.id == self.product_id.id)
         finish_move_id = finished_move_lines[0].move_id.id
-        # print(finish_move_id)
-        # print(finished_move_lines)
-        # print(finished_move_lines.state)
-        #
-        # print(self.final_lot_id.id)
-        # print(finished_move_lines.lot_id.id)
-
+       
         print(self.env['stock.move.line'].search([('move_id', '=', finish_move_id)]))
         count=0
         for temp in source_move_lines:
-            #print(count)
             if count == 0:
                 print(finished_move_lines)
                 finished_move_lines.update({
@@ -273,9 +231,7 @@ class MrpWorkorderEdit(models.Model):
                     'location_dest_id': temp.location_id.id,
                     # 'lot_id': finished_move_lines.lot_id.id,
                 })
-                # print('上面')
-                # print(finished_move_lines)
-                # print(finished_move_lines.state)
+               
                 count += 1
             else:
                 test=self.env['stock.move.line'].create({
@@ -293,10 +249,5 @@ class MrpWorkorderEdit(models.Model):
                     # 'done_wo': True,
                     # 'done_move': False
                 })
-                #print('下面')
-                #print(test)
-
-        #print(self.env['stock.move.line'].search([('move_id', '=', finish_move_id)]))
-        # raise UserError('')
-
+               
         return True
